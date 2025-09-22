@@ -1,9 +1,8 @@
-import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/constants'
-import { ShoppingCart, UserIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import Menu from './Menu'
 
 const Header = () => {
   return (
@@ -15,23 +14,11 @@ const Header = () => {
           <span className="hidden lg:block font-bold text-2xl">{APP_NAME}</span>
         </Link>
 
-        <div className="space-x-1">
-          <Button variant='ghost' size='sm'>
-            <Link href = '/cart' className='flex items-center'>
-            <ShoppingCart className='mr-1' />
-            Cart
-            </Link>
-          </Button>
-          <Button variant='ghost' size='sm'>
-            <Link href = '/sign-in' className='flex items-center'>
-            <UserIcon className='mr-1' />
-            Sign In
-            </Link>
-          </Button>
+          
+          <Menu />
         </div>
         </div>
       </div>
-    </div>
   )
 }
 
