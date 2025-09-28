@@ -3,14 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import ProductPrice from "./ProductPrice";
+import {type ProductType } from "@/lib/types";
 
-const ProductCard = ({ product }: { product: any }) => {
+const ProductCard = ({ product }: { product: ProductType }) => {
   return (
     <Card className="w-full max-w-sm p-0 rounded-xl hover:shadow-lg transition cursor-pointer">
-      <CardHeader className="p-0">
+      <CardHeader className="rounded-xl p-0 overflow-hidden">
         <Link href={`/product/${product.slug}`}>
           <Image
-            className="w-full object-cover rounded-lg"
+            className="w-full object-cover aspect-square"
             src={product.images[0]}
             alt={product.name}
             width={300}
@@ -26,7 +27,7 @@ const ProductCard = ({ product }: { product: any }) => {
             <div className="font-extrabold text-xl">
                 {
                     product.stock ? <>
-                        <ProductPrice value={product.price} />
+                        <ProductPrice value={Number(product.price)} />
                     </> : <span className="text-red-500 line-through">Out of Stock</span>
                 }
             </div>
