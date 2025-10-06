@@ -27,7 +27,7 @@ const ProductDetail = async({params}:{params:Promise<{slug:string}>}) => {
                 <p>{product.brand} {product.category}</p>
                 <h1 className="text-3xl font-bold">{product.name}</h1>
                 <p className="text-md font-bold">
-                    ${product.rating} of {product.numReviews} numReviews
+                    ${product.rating} of {product.numReviews} Reviews
                 </p>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center">
                     <ProductPrice value={Number(product.price)} className='bg-green-100 text-green-700 w-24 rounded-full px-4 py-2'/>

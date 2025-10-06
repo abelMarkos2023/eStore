@@ -23,3 +23,18 @@ export const insertProductSchema = zod.object({
     isFeatured: zod.boolean(),
     banner: zod.string().nullable(),
 });
+
+export const signInSchema = zod.object({
+    email: zod.string().email("Not a valid email address"),
+    password: zod.string().min(6, "Password must be at least 6 characters long"),
+})
+
+export const signUpSchema = zod.object({
+    name: zod.string(),
+    email: zod.string().email("Not a valid email address"),
+    password: zod.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: zod.string().min(6, "Password must be at least 6 characters long"),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+})

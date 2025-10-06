@@ -10,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import UserButton from "./UserButton";
 
 const Menu = () => {
   return (
@@ -22,12 +23,8 @@ const Menu = () => {
             Cart
           </Link>
         </Button>
-        <Button asChild size="sm">
-          <Link href="/sign-in" className="flex items-center">
-            <UserIcon className="mr-1" />
-            Sign In
-          </Link>
-        </Button>
+        <UserButton />
+        
       </nav>
 
       {/* Mobile Toggler */}
@@ -47,12 +44,7 @@ const Menu = () => {
                 Cart
               </Link>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/sign-in" className="flex items-center">
-                <UserIcon className="mr-1" />
-                Sign In
-              </Link>
-            </Button>
+              <UserButton />
             <SheetDescription></SheetDescription>
           </SheetContent>
         </Sheet>

@@ -17,7 +17,7 @@ if (!connectionString) {
 // Instantiates the Prisma adapter using the Neon connection pool to handle the connection between Prisma and Neon.
 // const adapter = new PrismaNeon(pool);
 const adapter = new PrismaNeon({ connectionString });
-console.log('Adapter created:', adapter);
+
 
 // Extends the PrismaClient with a custom result transformer to convert the price and rating fields to strings.
 export const prisma = new PrismaClient({ adapter }).$extends({
