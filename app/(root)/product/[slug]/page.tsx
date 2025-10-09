@@ -1,8 +1,10 @@
+import AddToCart from '@/components/shared/products/AddToCart';
 import ProductImages from '@/components/shared/products/ProductImages';
 import ProductPrice from '@/components/shared/products/ProductPrice';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { getMyCart } from '@/lib/actions/cart.actions';
 import { getProductBySlug } from '@/lib/actions/product.action';
 import { notFound } from 'next/navigation';
 import React from 'react'
@@ -12,6 +14,7 @@ const ProductDetail = async({params}:{params:Promise<{slug:string}>}) => {
     const {slug} = await params;
 
     const product = await getProductBySlug(slug);
+    const cart = await getMyCart();
 
     if(!product) return notFound();
 
@@ -50,9 +53,17 @@ const ProductDetail = async({params}:{params:Promise<{slug:string}>}) => {
                     </div>
                     {
                         product.stock > 0 && (
-                            <Button className='w-full cursor-pointer'>
-                                Add to Cart
-                            </Button>
+                            <AddToCart cart = {cart} item = {
+                                {
+                                    productId: product.id,
+                                    name: product.name,
+                                    slug: product.slug,
+                                    image: product.images[0],
+                                    price: product.price,
+                                    qty: 1
+                                }
+                            } 
+                            />
                         )
                     }
                 </CardContent>

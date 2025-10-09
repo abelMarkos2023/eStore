@@ -37,4 +37,23 @@ export const signUpSchema = zod.object({
 }).refine(data => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-})
+});
+
+export const cartItemSchema = zod.object({
+    productId: zod.string(),
+    name: zod.string().min(3, "Product name must be at least 3 characters long"),
+    slug: zod.string().min(3, "Product slug must be at least 3 characters long"),
+    image: zod.string().min(3, "Product image must be at least 3 characters long"),
+    price: currency,
+    qty: zod.number().min(1, "Quantity must be at least 1"),
+});
+
+export const insertCartSchema = zod.object({
+    items: zod.array(cartItemSchema).min(1, "Cart must have at least one item"),
+    itemsPrice: currency,
+    shippingPrice: currency,
+    taxPrice:currency,
+    totalPrice:currency,
+    sessionId: zod.string().min(3, "Session cart id must be at least 3 characters long"),
+    userId: zod.string().optional().nullable(),
+});
