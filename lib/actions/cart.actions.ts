@@ -1,7 +1,7 @@
 'use server'
 
 import { cookies } from "next/headers"
-import type { TCart, TCartItem } from "../types"
+import type { TCartItem } from "../types"
 import { auth } from "@/auth"
 import { convertToPlainObject, formatError, roundToTwoDecimal } from "../utils"
 import { prisma } from "@/db/prisma"

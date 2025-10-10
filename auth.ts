@@ -111,7 +111,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async jwt({token,user}:any){
+    async jwt({token,user,trigger}:any){
         
       if(user){
         token.role = user.role
@@ -127,12 +127,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           {name:token.name}
         })
       }
+
+      if(trigger === 'signIn' || trigger === 'signUp'){
+        const cookieObject = await cookies();
+        const cartSessionId = cookieObject.get('cartSessionId')?.value;
+
+        if(cartSessionId){
+          const cart = await prisma.cart.findFirst({
+          where:{sessionId:cartSessionId}
+        });
+        if(cart){
+          await prisma.cart.deleteMany({
+            where:{userId:user.id}
+          })
+          await prisma.cart.update({
+          where :{id:cart.id},
+          data : {userId:user.id}
+        })
+        }
+
+
+     
+        
+        }
+      }
     }
       return token
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     authorized({request,auth}:any){
+
+      const protectedPath = [
+        /\/shipping-address/,
+        /\/payment-method/,
+        /\/place-order/,
+        /\/user\/(.*)/,
+        /\/profile/,
+        /\/order\/(.*)/,
+        /\/admin/
+      ]
       if(!request.cookies.get('cartSessionId')){
+        const {pathname} = request.nextUrl;
+
+        if(!auth && protectedPath.some(path => path.test(pathname))) return false;
         const sessionId = crypto.randomUUID();
         
         const newRequestHeaders = new Headers(request.headers);

@@ -57,3 +57,13 @@ export const insertCartSchema = zod.object({
     sessionId: zod.string().min(3, "Session cart id must be at least 3 characters long"),
     userId: zod.string().optional().nullable(),
 });
+
+export const shippingAddressSchema = zod.object({
+    fullName: zod.string().min(3, "Full name must be at least 3 characters long"),
+    address: zod.string().min(3, "Address must be at least 3 characters long"),
+    city: zod.string().min(2, "City must be at least 2 characters long"),
+    postalCode: zod.string().min(2, "Postal code must be at least 2 characters long"),
+    country: zod.string().min(2, "Country must be at least 2 characters long"),
+    lat: zod.number().optional(),
+    lng: zod.number().optional(),
+})

@@ -2,7 +2,6 @@ import AddToCart from '@/components/shared/products/AddToCart';
 import ProductImages from '@/components/shared/products/ProductImages';
 import ProductPrice from '@/components/shared/products/ProductPrice';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getMyCart } from '@/lib/actions/cart.actions';
 import { getProductBySlug } from '@/lib/actions/product.action';
