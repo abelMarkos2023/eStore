@@ -71,3 +71,15 @@ export function formatCurrency(value:number | string | null){
     return "NaN"
   }
 }
+
+export const formatId = (id:string) => {
+  return `..${id.substring(id.length - 6)}`
+}
+
+export const formatDate = (date:Date) => {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}

@@ -1,5 +1,6 @@
 import zod from "zod";
 import { formatDecimal } from "./utils";
+import { PAYMENT_METHODS } from "./constants";
 
 const currency = zod.string().refine(value => /^\d+(\.\d{2})?$/.test(formatDecimal(Number(value))), "Invalid currency format");
 
@@ -66,4 +67,34 @@ export const shippingAddressSchema = zod.object({
     country: zod.string().min(2, "Country must be at least 2 characters long"),
     lat: zod.number().optional(),
     lng: zod.number().optional(),
+})
+
+
+export const paymentMethodSchema = zod.object({
+    type:zod.string().min(3, "Payment method must be at least 3 characters long"),
+}).refine(data => PAYMENT_METHODS.includes(data.type), {
+    message: `Payment method must be one of the following: ${PAYMENT_METHODS.join(', ')}`,
+    path: ["type"],
+});
+
+export const insertOrderSchema = zod.object({
+    userId: zod.string().min(3, "User ID must be at least 3 characters long"),
+    itemsPrice: currency,
+    shippingPrice: currency,
+    taxPrice:currency,
+    totalPrice:currency,
+    paymentsMethod:zod.string().refine(data => PAYMENT_METHODS.includes(data), {
+        message: "Payment method is not valid",
+        path: ["paymentMethod"],
+    }),
+    shippingAddress: shippingAddressSchema,
+})
+
+export const insertOrderItemSchema = zod.object({
+    productId: zod.string(),
+    name: zod.string().min(3, "Product name must be at least 3 characters long"),
+    slug: zod.string().min(3, "Product slug must be at least 3 characters long"),
+    image: zod.string().min(3, "Product image must be at least 3 characters long"),
+    price: currency,
+    qty: zod.number().min(1, "Quantity must be at least 1"),
 })

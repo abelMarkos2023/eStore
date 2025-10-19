@@ -166,10 +166,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         /\/order\/(.*)/,
         /\/admin/
       ]
-      if(!request.cookies.get('cartSessionId')){
-        const {pathname} = request.nextUrl;
+      const {pathname} = request.nextUrl;
 
         if(!auth && protectedPath.some(path => path.test(pathname))) return false;
+
+        
+      //for setting cart session Id cookie
+      if(!request.cookies.get('cartSessionId')){
+        
         const sessionId = crypto.randomUUID();
         
         const newRequestHeaders = new Headers(request.headers);

@@ -2,11 +2,12 @@
 
 import { auth, signIn, signOut } from "@/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { shippingAddressSchema, signInSchema, signUpSchema } from "../validator";
+import { paymentMethodSchema, shippingAddressSchema, signInSchema, signUpSchema } from "../validator";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { TShippingAddress } from "../types";
+import z from "zod";
 
 export const signUserUp = async(prevState:unknown,formData:FormData) => {
 
@@ -109,6 +110,29 @@ export const signUserIn = async(prevState:unknown,formData:FormData) => {
         }
         return { success: false,message:'Invalid Email or Password'}
     }
+}
+
+
+export const updateUserPaymentMethod = async(data: z.infer<typeof paymentMethodSchema>) => {
+try {
+
+    const session = await auth();
+    if(!session || !session.user || !session.user.email) throw new Error('You must be logged in to update your payment method');
+
+    const user = await getUserById(session.user.id);
+    if(!user) throw new Error('User not found');
+
+    const paymentMethod = paymentMethodSchema.parse(data);
+
+    await prisma.user.update({
+        where:{id:user.id},
+        data:{paymentMethod:paymentMethod.type}
+    })
+    return {success:true,message:"Payment method updated successfully"}
+    
+} catch (error) {
+    return { success: false,message:formatError(error)}
+}
 }
 
 export const signOutUser = async() => await signOut()

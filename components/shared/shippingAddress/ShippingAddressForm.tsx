@@ -34,7 +34,7 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
       }
 
       toast.success(res.message || 'Address updated successfully');
-      router.push('/payment')
+      router.push('/payment-method')
     })
 
   }
