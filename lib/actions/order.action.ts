@@ -1,13 +1,15 @@
 'use server'
 
 import { isRedirectError } from "next/dist/client/components/redirect-error"
-import { TCartItem, Torder } from "../types"
+import { TCartItem, Torder, TPaymentResult } from "../types"
 import { convertToPlainObject, formatError } from "../utils"
 import { auth } from "@/auth"
 import { getUserById } from "./user.action"
 import { getMyCart } from "./cart.actions"
 import { insertOrderSchema } from "../validator"
 import { prisma } from "@/db/prisma"
+import { paypal } from "../paypal"
+import { revalidatePath } from "next/cache"
 
 export const createOrder = async () => {
 
@@ -95,4 +97,98 @@ export const getOrderById = async (id:string) => {
         }
         return null
     }
+}
+
+export const createPaypalOrder = async (orderId:string) => {
+
+    try {
+        const order = await prisma.order.findFirst({where:{id:orderId}});
+        if(!order) throw new Error('Order not found');
+
+        const payapalOrderResult = await paypal.createOrder(Number(order.totalPrice));
+        await prisma.order.update({where:{id:order.id},data:{
+            paymentResult:{
+                id:payapalOrderResult.id,
+                status:'',
+                email_address:'',
+                pricePaid:0
+
+            }
+        }});
+        return {success:true, message:'Paypal order created successfully', data:payapalOrderResult.id};
+    } catch (error) {
+        
+        if(isRedirectError(error)){
+            throw error
+        }
+        return null
+    }
+}
+
+export const approvePaypalOrder = async(orderId:string,data:{orderID:string}) => {
+    
+    try {
+        //get the order from the database
+        const order = await prisma.order.findFirst({where:{id:orderId}});
+        if(!order) throw new Error('Order not found');
+
+        //capture the paypal order
+
+        const captureOrderResult = await paypal.capturePayment(data.orderID);
+
+        if(!captureOrderResult || captureOrderResult.status !== 'COMPLETED' || captureOrderResult.id !== (order.paymentResult as TPaymentResult)?.id) throw new Error('Paypal order not found');
+
+
+
+        await updateOrderToPaid({orderId,paymentResult:{
+            id:captureOrderResult.id,
+            status:captureOrderResult.status,
+            email_address:captureOrderResult.payer.email_address,
+            pricePaid:captureOrderResult.purchase_units[0]?.payments?.captures[0]?.amount?.value
+        }});
+
+        revalidatePath(`/order/${orderId}`);
+        return {success:true, message:'Paypal order captured successfully', data:captureOrderResult};
+    } catch (error) {
+        console.log(error)
+        return {success:false, message:formatError(error)}
+    }
+}
+
+async function updateOrderToPaid({orderId,paymentResult}:{orderId:string,paymentResult:TPaymentResult}){
+    const order = await prisma.order.findFirst(
+        {
+            where:{id:orderId},
+            include:{orderItems:true}
+        }
+    );
+        if(!order) throw new Error('Order not found');
+
+        if(order.isPaid) throw new Error('Order already paid');
+
+        await prisma.$transaction(async (tsx) => {
+
+            for (const item of order.orderItems){
+                await tsx.product.update({
+                    where:{id:item.productId},
+                    data:{stock:{increment:-item.qty}}
+                })
+            }
+
+            await tsx.order.update({
+                where:{id:order.id},
+                data:{isPaid:true,paidAt:new Date(),paymentResult}
+            })
+        });
+
+
+        const updatedOrder = await prisma.order.findFirst(
+            {
+                where:{id:orderId},
+                include:{orderItems:true,user:{select:{name:true,email:true}}}
+            }
+        );
+        return updatedOrder
+
+
 }

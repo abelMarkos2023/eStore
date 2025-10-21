@@ -22,7 +22,10 @@ const page = async ({params}:{params:Promise<{id:string}>}) => {
                 shippingAddress: order.shippingAddress as TShippingAddress
           
             }
-        } />
+        
+        } 
+            paypalClientId={process.env.PAYPAL_CLIENT_ID || 'sb'}
+        />
     </div>
   )
 }

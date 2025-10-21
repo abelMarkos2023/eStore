@@ -98,3 +98,10 @@ export const insertOrderItemSchema = zod.object({
     price: currency,
     qty: zod.number().min(1, "Quantity must be at least 1"),
 })
+
+export const paymentResultSchema = zod.object({
+    id: zod.string(),
+    status: zod.string(),
+    pricePaid: zod.string(),
+    email_address: zod.string(),
+})
