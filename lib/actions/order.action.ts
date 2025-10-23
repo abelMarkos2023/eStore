@@ -1,7 +1,7 @@
 'use server'
 
 import { isRedirectError } from "next/dist/client/components/redirect-error"
-import { TCartItem, Torder, TPaymentResult } from "../types"
+import { TCartItem, TPaymentResult } from "../types"
 import { convertToPlainObject, formatError } from "../utils"
 import { auth } from "@/auth"
 import { getUserById } from "./user.action"
@@ -191,4 +191,27 @@ async function updateOrderToPaid({orderId,paymentResult}:{orderId:string,payment
         return updatedOrder
 
 
+}
+
+export const getUsersOrder = async({limit= 5,page=1}:{limit?:number,page?:number}) => {
+    const session = await auth();
+    if(!session || !session.user || !session.user.id) throw new Error('You must be logged in to get your orders');
+    const userId = session.user.id;
+
+    try {
+        const data = await prisma.order.findMany({
+            where:{userId},
+            orderBy:{createdAt:'desc'},
+            take:limit,
+            skip:(page-1)*limit
+        });
+
+        const userOrders = await prisma.order.count({where:{userId}});
+        const totalPages = Math.ceil(userOrders/limit);
+        return {data,totalPages};
+
+
+    } catch (error) {
+        console.log(error);
+    }
 }

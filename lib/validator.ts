@@ -104,4 +104,9 @@ export const paymentResultSchema = zod.object({
     status: zod.string(),
     pricePaid: zod.string(),
     email_address: zod.string(),
+});
+
+export const updateProfileSchema = zod.object({
+    name: zod.string().min(3, "Name must be at least 3 characters long"),
+    email: zod.string().email("Not a valid email address"),
 })

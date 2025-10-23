@@ -187,7 +187,7 @@ const OrderDetailTable = ({ order,paypalClientId }: { order: Torder,paypalClient
                           </div>
                         </div>
                         {
-                         ( !isPaid && paymentsMethod == 'Stripe') && (
+                         ( !isPaid && paymentsMethod == 'PayPal') && (
                            <div>
                              <PayPalScriptProvider options={{ clientId: paypalClientId }}>
                               <PrintLoadingState />

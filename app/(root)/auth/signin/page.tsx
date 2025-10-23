@@ -17,7 +17,9 @@ const SignInPage = async ({searchParams}:{searchParams:Promise<{callbackUrl:stri
         if(!callbackUrl){
         return redirect(`${url}/`);
     }
-       return redirect(`${url}/${callbackUrl}` || '/');
+
+    console.log(callbackUrl)
+       return redirect(`/${callbackUrl}` || '/');
     }
 
 
