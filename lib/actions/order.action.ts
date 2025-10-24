@@ -1,7 +1,7 @@
 'use server'
 
 import { isRedirectError } from "next/dist/client/components/redirect-error"
-import { TCartItem, TPaymentResult } from "../types"
+import { TCartItem, TPaymentResult, TSalesData } from "../types"
 import { convertToPlainObject, formatError } from "../utils"
 import { auth } from "@/auth"
 import { getUserById } from "./user.action"
@@ -10,6 +10,7 @@ import { insertOrderSchema } from "../validator"
 import { prisma } from "@/db/prisma"
 import { paypal } from "../paypal"
 import { revalidatePath } from "next/cache"
+import { Prisma } from "@prisma/client"
 
 export const createOrder = async () => {
 
@@ -155,7 +156,7 @@ export const approvePaypalOrder = async(orderId:string,data:{orderID:string}) =>
     }
 }
 
-async function updateOrderToPaid({orderId,paymentResult}:{orderId:string,paymentResult:TPaymentResult}){
+async function updateOrderToPaid({orderId,paymentResult}:{orderId:string,paymentResult?:TPaymentResult}){
     const order = await prisma.order.findFirst(
         {
             where:{id:orderId},
@@ -213,5 +214,108 @@ export const getUsersOrder = async({limit= 5,page=1}:{limit?:number,page?:number
 
     } catch (error) {
         console.log(error);
+    }
+}
+
+export const getOrdersSummary = async () => {
+
+    //get resources counts
+
+    const usersData = await prisma.user.count({});
+    const ordersData = await prisma.order.count({});
+    const productsData = await prisma.product.count({});
+
+    //get total sales
+
+    const totalSales = await prisma.order.aggregate({
+        _sum:{totalPrice: true}
+    })
+    //get total revenue
+
+    const salesDataRaw = await prisma.$queryRaw<Array<{month:string,totalSales: Prisma.Decimal}>>`
+    SELECT to_char("createdAt",'MM/YY') as "month",sum("totalPrice") as "totalSales" FROM "Order" GROUP BY to_char("createdAt",'MM/YY')`
+
+    const salesData:TSalesData[] = salesDataRaw.map((item) => ({
+        month:item.month,
+        totalSales: Number(item.totalSales)
+    }));
+
+    //get latest sales
+
+    const latestOrders = await prisma.order.findMany({
+        orderBy:{createdAt:'desc'},
+        include:{user:{select:{name:true,email:true}}},
+        take:5
+    });
+
+    return {
+        usersData,
+        ordersData,
+        productsData,
+        salesData,
+        latestOrders,
+        totalSales
+    }
+}
+
+export const getAllOrder = async({limit= 5,page=1}:{limit?:number,page?:number}) => {
+    const session = await auth();
+    if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all orders');
+    try {
+        const data = await prisma.order.findMany({
+            orderBy:{createdAt:'desc'},
+            take:limit,
+            skip:(page-1)*limit
+        });
+        const orders = await prisma.order.count({});
+        const totalPages = Math.ceil(orders/limit);
+        return {data,totalPages};
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+export const DeleteOrderById = async(id:string) => {
+
+    const session = await auth();
+    if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to delete an order');
+    try {
+        await prisma.order.delete({where:{id}});
+        revalidatePath('/admin/orders');
+        return {success:true, message:'Order deleted successfully'};
+    } catch (error) {
+        console.log(error);
+        return {success:false, message:formatError(error)};
+    }
+}
+
+export const updateCODOrderToPaid = async (orderId:string) => {
+
+   try {
+    await updateOrderToPaid({orderId});
+
+    revalidatePath('/admin/orders');
+    return {success:true, message:'Order marked as paid successfully'}
+   } catch (error) {
+    return {success:false, message:formatError(error)}
+   }
+}
+
+export const updateCODOrderToDelievered = async(orderId:string) => {
+
+    try {
+        const order = await prisma.order.findFirst({
+            where:{id:orderId}
+        });
+        if(!order) throw new Error('Order not found');
+
+        await prisma.order.update({
+            where:{id:order.id},
+            data:{isDelivered:true,deliveredAt:new Date()}
+        });
+        revalidatePath('/admin/orders');
+        return {success:true, message:'Order marked as delievered successfully'}
+    } catch (error) {
+        return {success:false, message:formatError(error)}
     }
 }

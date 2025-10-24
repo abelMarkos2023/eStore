@@ -25,5 +25,10 @@ export type Torder = z.infer<typeof insertOrderSchema> & {
     user:{name:string;email:string};
 }
 
+export type TSalesData = {
+    month:string;
+    totalSales:number
+}
+
 
 export type TPaymentResult = z.infer<typeof paymentResultSchema>

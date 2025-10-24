@@ -49,6 +49,15 @@ const UserButton = async () => {
                         Order History
                       </Link>
                     </DropdownMenuItem>
+                    {
+                      session.user?.role === 'admin' && (
+                        <DropdownMenuItem>
+                          <Link href='/admin/overview' className="w-full">
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      )
+                    }
                     <DropdownMenuItem className="p-0 w-full mt-2">
                         <form action={signOutUser}>
                             <Button className="w-full cursor-pointer text-center py-4" variant = 'ghost' type="submit">Sign out</Button>
