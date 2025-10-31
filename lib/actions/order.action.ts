@@ -58,6 +58,8 @@ export const createOrder = async () => {
             data:{items:[],itemsPrice:0,shippingPrice:0,taxPrice:0,totalPrice:0}
         });
 
+        
+
         return order.id
       })
         return {success:true, message:'Order created successfully', redirect:`/order/${orderId}`}
@@ -173,7 +175,8 @@ async function updateOrderToPaid({orderId,paymentResult}:{orderId:string,payment
                 await tsx.product.update({
                     where:{id:item.productId},
                     data:{stock:{increment:-item.qty}}
-                })
+                });
+
             }
 
             await tsx.order.update({
@@ -317,5 +320,39 @@ export const updateCODOrderToDelievered = async(orderId:string) => {
         return {success:true, message:'Order marked as delievered successfully'}
     } catch (error) {
         return {success:false, message:formatError(error)}
+    }
+}
+
+//get all products
+export const getAllProducts = async({limit= 5,page=1,category,query}:{limit?:number,page?:number,category?:string,query?:string}) => {
+
+    try {
+        const session = await auth();
+
+        if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all products');
+        const data = await prisma.product.findMany({
+            where:{category:category || undefined, name:{contains:query || undefined}},
+            orderBy:{createdAt:'desc'},
+            take:limit,
+            skip:(page-1)*limit
+        });
+        const products = await prisma.product.count({where:{category:category || undefined, name:{contains:query || undefined}}});
+        const totalPages = Math.ceil(products/limit);
+        return {data,totalPages};
+    } catch (error) {
+        console.log(formatError(error));
+    }
+}
+
+export const deleteProductById = async(id:string) => {
+
+    try {
+        const product = await prisma.product.findUnique({where:{id}});
+        if(!product) throw new Error('Product not found');
+        await prisma.product.delete({where:{id}});
+        revalidatePath('/admin/products');
+        return {success:true, message:'Product deleted successfully'}
+    } catch (error) {
+     return {success:false, message:formatError(error)}   
     }
 }

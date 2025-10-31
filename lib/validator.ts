@@ -5,6 +5,7 @@ import { PAYMENT_METHODS } from "./constants";
 const currency = zod.string().refine(value => /^\d+(\.\d{2})?$/.test(formatDecimal(Number(value))), "Invalid currency format");
 
 export const insertProductSchema = zod.object({
+   
     name: zod.string()
     .min(3, "Product name must be at least 3 characters long")
     .max(255, "Product name must be at most 255 characters long"),
@@ -20,10 +21,14 @@ export const insertProductSchema = zod.object({
     .max(5, "Product can have a maximum of 5 images"),
     brand: zod.string(),
     price: currency,
-   stock: zod.number(),
+   stock: zod.string(),
     isFeatured: zod.boolean(),
-    banner: zod.string().nullable(),
+    banner: zod.string().optional(),
 });
+
+export const updateProductSchema = insertProductSchema.extend({
+    id: zod.string().min(3, "Product ID must be at least 3 characters long"),
+})
 
 export const signInSchema = zod.object({
     email: zod.string().email("Not a valid email address"),

@@ -40,13 +40,11 @@ const OrderDetailTable = ({
 }) => {
   const {
     id,
-    createdAt,
     isPaid,
     paidAt,
     isDelivered,
     deliveredAt,
     orderItems,
-    user,
     itemsPrice,
     taxPrice,
     shippingPrice,
