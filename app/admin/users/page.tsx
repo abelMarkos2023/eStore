@@ -1,38 +1,33 @@
 import DeleteDialog from '@/components/shared/DeleteDialog';
 import Pagination from '@/components/shared/Pagination';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { deleteProductById, getAllProducts } from '@/lib/actions/order.action';
-import { formatCurrency, formatId } from '@/lib/utils';
+import { deleteUser, getAllUsers } from '@/lib/actions/user.action'
+import { formatId } from '@/lib/utils';
 import Link from 'next/link';
 import React from 'react'
 
-const ProductsPage = async(props:{searchParams:Promise<{
-    page:string,
-    category:string,
-    query:string
-}>}) => {
-    const searchParams = await props.searchParams;
+const AdminUserPage = async ({searchParams}:{searchParams:Promise<{page:string,query:string}>}) => {
 
-    const page = Number(searchParams.page || 1);
-    const category = searchParams.category || '';
-    const searchText = searchParams.query || '';
+        const {page='1',query=''} = await searchParams
 
-    const products = await getAllProducts({limit: 10, page, category, query:searchText});
+    const data = await getAllUsers({limit:5,page:Number(page),query});
 
-    console.log(products)
+
+
   return (
     <div className="space-y-3">
         <div className="flex items-center justify-between">
             <div className="flex gap-3 items-center">
-                <h2 className="text-2xl font-bold">All Prooducts</h2>
+                <h2 className="text-2xl font-bold">All Users</h2>
                 {
-                    searchText && (
+                    query && (
                         <>
                             <p className="text-muted-foreground">
-                            Showing results for{ `  " ${searchText} "` } 
+                            Showing results for{ `  " ${query} "` } 
                             </p>
-                            <Link href= '/admin/products'>
+                            <Link href= '/admin/users'>
                                 <Button variant='ghost'>
                                      Reset
                                 </Button>
@@ -52,28 +47,27 @@ const ProductsPage = async(props:{searchParams:Promise<{
                     <TableRow>
                         <TableHead>Id</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Rating</TableHead>
-                        
-                        <TableHead>Stock</TableHead>
-                        <TableHead>Price</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {
-                        products?.data.map((product) => (
-                            <TableRow key={product.id}>
-                                <TableCell>{formatId(product.id)}</TableCell>
-                                <TableCell>{product.name}</TableCell>
-                                <TableCell>{product.category}</TableCell>
-                                <TableCell>{product.rating}</TableCell>
-                                <TableCell>{product.stock}</TableCell>
-                                <TableCell>{formatCurrency(product.price)}</TableCell>
+                        data?.data.map((user) => (
+                            <TableRow key={user.id}>
+                                <TableCell>{formatId(user.id)}</TableCell>
+                                <TableCell>{user.name}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>
+                                    {
+                                        user.role === 'user' ? <Badge variant='secondary'>user</Badge> : <Badge variant= 'default'>admin</Badge>
+                                    }
+                                </TableCell>
                                 <TableCell className='flex gap-2'>
-                                   <DeleteDialog id ={product.id} action={deleteProductById}/>
+                                   <DeleteDialog id ={user.id} action={deleteUser}/>
                                <Button className='cursor-pointer' variant='default' size={'sm'}>
-                                 <Link href={`/admin/products/${product.id}`}>
+                                 <Link href={`/admin/users/${user.id}`}>
                                 Edit
                                     </Link>
                                </Button>
@@ -84,10 +78,10 @@ const ProductsPage = async(props:{searchParams:Promise<{
                 </TableBody>
             </Table>
             {
-                 products!.totalPages > 1 && (
+                 data!.totalPages > 1 && (
                     <Pagination
                         page={page}
-                        totalPages={products?.totalPages || 1}
+                        totalPages={data?.totalPages || 1}
                     />
                 )
             }
@@ -96,4 +90,4 @@ const ProductsPage = async(props:{searchParams:Promise<{
   )
 }
 
-export default ProductsPage
+export default AdminUserPage

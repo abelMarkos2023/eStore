@@ -114,4 +114,9 @@ export const paymentResultSchema = zod.object({
 export const updateProfileSchema = zod.object({
     name: zod.string().min(3, "Name must be at least 3 characters long"),
     email: zod.string().email("Not a valid email address"),
+});
+
+export const updateUserSchema = updateProfileSchema.extend({
+    id: zod.string().min(3, "User ID must be at least 3 characters long"),
+    role: zod.string().min(3, "Role must be at least 3 characters long"),
 })

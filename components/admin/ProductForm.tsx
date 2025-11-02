@@ -219,7 +219,7 @@ return (
                                 {
                                     images.map((image) => (
                                         <div key={image} className="relative w-24 h-24">
-                                            <Image src={image} alt="product" fill className="object-cover" />
+                                            <Image src={image || '/default.jpg'} alt="product" fill className="object-cover" />
                                         </div>
                                     ))
                                 }

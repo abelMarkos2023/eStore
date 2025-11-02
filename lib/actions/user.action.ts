@@ -8,12 +8,15 @@ import {
   signInSchema,
   signUpSchema,
   updateProfileSchema,
+  updateUserSchema,
 } from "../validator";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { TShippingAddress } from "../types";
 import z from "zod";
+import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 export const signUserUp = async (prevState: unknown, formData: FormData) => {
   const name = formData.get("name") as string;
@@ -156,5 +159,71 @@ export const updateProfile = async (userData: {
     return { success: false, message: formatError(error) };
   }
 };
+
+export const getAllUsers = async({limit= 5,page=1,query=''}:{limit?:number,page?:number,query?:string}) => {
+
+  const queryFilter : Prisma.UserWhereInput = query && query !== '' ? {
+          
+              name:{
+                  contains:query,
+                   mode:'insensitive'
+                  } as Prisma.StringFilter,
+            
+      } : {};
+
+  try {
+    const session = await auth();
+    if (!session || !session.user || session.user.role !== 'admin'){
+      throw new Error('You must be logged in as admin to get all users');
+    }
+
+    const users = await prisma.user.findMany({
+      where:{...queryFilter},
+      orderBy:{createdAt:'desc'},
+      take:limit,
+      skip:(page-1)*limit
+    });
+    const totalUsers = await prisma.user.count({});
+    const totalPages = Math.ceil(totalUsers/limit);
+    return {data:users,totalPages};
+  } catch (error) {
+    
+    console.log(error)
+  }
+}
+
+export const updateUser = async(user:z.infer<typeof updateUserSchema>) => {
+
+  try {
+    await prisma.user.update({
+      where:{id:user.id},
+      data:{
+      name:user.name,
+      email:user.email
+    }
+  }
+);
+  return {success:true, message:'User updated successfully'}
+  } catch (error) {
+    return {success:false, message:formatError(error)}
+  }
+}
+
+export const deleteUser = async(id:string) => {
+
+  try {
+    const session = await auth();
+    if (!session || !session.user || session.user.role !== 'admin'){
+      throw new Error('You must be logged in as admin to delete a user');
+    }
+    await prisma.user.delete({where:{id}});
+    revalidatePath('/admin/users');
+    return {success:true, message:'User deleted successfully'};
+  } catch (error) {
+    
+    console.log(error);
+    return {success:false, message:formatError(error)};
+  }
+}
 
 export const signOutUser = async () => await signOut();

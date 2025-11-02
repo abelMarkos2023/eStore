@@ -261,15 +261,31 @@ export const getOrdersSummary = async () => {
     }
 }
 
-export const getAllOrder = async({limit= 5,page=1}:{limit?:number,page?:number}) => {
+export const getAllOrder = async({limit= 5,page=1,query=''}:{limit?:number,page?:number,query?:string}) => {
     const session = await auth();
     if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all orders');
+
+    const queryFilter : Prisma.OrderWhereInput = query && query !== '' ? {
+        user:{
+            name:{
+                contains:query,
+                 mode:'insensitive'
+                } as Prisma.StringFilter,
+           
+        } 
+    } : {};
+    
     try {
         const data = await prisma.order.findMany({
+            where:{...queryFilter},
             orderBy:{createdAt:'desc'},
+            include:{user:{select:{name:true,email:true}}},
             take:limit,
             skip:(page-1)*limit
         });
+
+        
+        
         const orders = await prisma.order.count({});
         const totalPages = Math.ceil(orders/limit);
         return {data,totalPages};

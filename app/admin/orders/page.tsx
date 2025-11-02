@@ -19,25 +19,45 @@ import React from "react";
 const Orders = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ page: string }>;
+  searchParams: Promise<{ page: string, query: string }>;
 }) => {
-  const { page = 1 } = await searchParams;
+  const { page = 1 , query} = await searchParams;
   const session = await auth();
   if (session?.user?.role !== "admin")
     throw new Error("You're not authorized to view this page");
   const paginatedData = await getAllOrder({
     page: Number(page) || 1,
     limit: 6,
+    query : query || ''
   });
 
   if (!paginatedData) return null;
   return (
     <div className="space-y-4 overflow-x-auto">
+         <div className="flex gap-3 items-center">
+                <h2 className="text-2xl font-bold">All Orders</h2>
+                {
+                    query && (
+                        <>
+                            <p className="text-muted-foreground">
+                            Showing results for{ `  " ${query} "` } 
+                            </p>
+                            <Link href= '/admin/orders'>
+                                <Button variant='ghost'>
+                                     Reset
+                                </Button>
+                             </Link>
+                        </>
+                        )
+                }
+                
+            </div>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>Date</TableHead>
+            <TableCell>BUYER</TableCell>
             <TableHead>Total Price</TableHead>
             <TableHead>Is Paid</TableHead>
             <TableHead>Is Delivered</TableHead>
@@ -48,7 +68,9 @@ const Orders = async ({
           {paginatedData?.data.map((order) => (
             <TableRow key={order.id}>
               <TableCell>{formatId(order.id)}</TableCell>
+              
               <TableCell>{formatDate(order.createdAt)}</TableCell>
+              <TableCell>{order.user.name}</TableCell>
               <TableCell>{formatCurrency(order.totalPrice)}</TableCell>
               <TableCell>
                 {order.isPaid ? (
