@@ -103,3 +103,32 @@ export const getProductById = async(id:string) =>{
         banner: product.banner ? product.banner : ''
     })
 }
+
+export async function getAllCategories(){
+
+    const data = await prisma.product.groupBy({
+        by:['category'],
+        _count: true
+    });
+
+    return data;
+}
+
+export async function getFeaturedProducts(){
+    const data = await prisma.product.findMany({
+        where:{
+            isFeatured: true
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        take: 6
+    
+    
+    })
+
+    const products =  convertToPlainObject(data);
+    const convertedProducts = products.map((product) => ({...product,stock:product.stock.toString(), banner: product.banner ? product.banner : ''}));
+
+    return convertedProducts
+}

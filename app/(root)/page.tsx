@@ -1,5 +1,6 @@
+import FeaturedProductCarousel from "@/components/shared/products/FeaturedProductCarousel";
 import ProductList from "@/components/shared/products/ProductList";
-import { getLatestProducts } from "@/lib/actions/product.action";
+import { getFeaturedProducts, getLatestProducts } from "@/lib/actions/product.action";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/constants";
 import {type Metadata } from "next";
 import Image from "next/image";
@@ -17,6 +18,7 @@ description: APP_DESCRIPTION
 export default async function Home() {
 
   const products = await getLatestProducts();
+  const featuredProducts = await getFeaturedProducts()
 
   if(!products) return <p>No Products Found</p>;
 
@@ -24,7 +26,7 @@ export default async function Home() {
   return (
    
    <div className="main">
-    <Image src="/images/banner-2.jpg" alt="Store Hero" width={1200} height={300} className="w-full h-60 md:h-96 object-cover rounded-lg"/>
+    {featuredProducts.length > 0 && <FeaturedProductCarousel data={featuredProducts} />}
       <ProductList title="New Arrivals" data = {products} />
    </div>
   );
