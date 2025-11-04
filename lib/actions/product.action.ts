@@ -4,8 +4,43 @@
 import { prisma } from "@/db/prisma";
 import { convertToPlainObject, formatError } from "../utils";
 import z from "zod";
-import { insertCartSchema, insertProductSchema, updateProductSchema } from "../validator";
+import {insertProductSchema, updateProductSchema } from "../validator";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+
+export const getAllProducts = async({limit= 5,page=1,category,query,sort,rating,price}:{limit?:number,page?:number,category?:string,query?:string,sort?:string,rating?:string,price?:string}) => {
+
+    try {
+        const session = await auth();
+
+        if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all products');
+
+        
+        const data = await prisma.product.findMany({
+           
+            orderBy:{createdAt:'desc'},
+            take:limit,
+            skip:(page-1)*limit
+        });
+        const products = await prisma.product.count(
+            {
+                where:{
+                    category:category || undefined, 
+                    name:{contains:query || undefined}
+                    }
+            });
+        const totalPages = Math.ceil(products/limit);
+        const productList = data.map((product) => ({
+            ...product,
+            stock:product.stock.toString(),
+            banner: product.banner ? product.banner : ''
+        }))
+        return {data:productList,totalPages};
+    } catch (error) {
+        console.log(formatError(error));
+    }
+}
+
 
 export const getLatestProducts = async() => {
     try {

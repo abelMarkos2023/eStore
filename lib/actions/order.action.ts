@@ -340,21 +340,34 @@ export const updateCODOrderToDelievered = async(orderId:string) => {
 }
 
 //get all products
-export const getAllProducts = async({limit= 5,page=1,category,query}:{limit?:number,page?:number,category?:string,query?:string}) => {
+export const getAllProducts = async({limit= 5,page=1,category,query,sort,rating,price}:{limit?:number,page?:number,category?:string,query?:string,sort?:string,rating?:string,price?:string}) => {
 
     try {
         const session = await auth();
 
         if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all products');
+
+        
         const data = await prisma.product.findMany({
             where:{category:category || undefined, name:{contains:query || undefined}},
             orderBy:{createdAt:'desc'},
             take:limit,
             skip:(page-1)*limit
         });
-        const products = await prisma.product.count({where:{category:category || undefined, name:{contains:query || undefined}}});
+        const products = await prisma.product.count(
+            {
+                where:{
+                    category:category || undefined, 
+                    name:{contains:query || undefined}
+                    }
+            });
         const totalPages = Math.ceil(products/limit);
-        return {data,totalPages};
+        const productList = data.map((product) => ({
+            ...product,
+            stock:product.stock.toString(),
+            banner: product.banner ? product.banner : ''
+        }))
+        return {data:productList,totalPages};
     } catch (error) {
         console.log(formatError(error));
     }

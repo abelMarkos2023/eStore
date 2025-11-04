@@ -1,5 +1,6 @@
 import FeaturedProductCarousel from "@/components/shared/products/FeaturedProductCarousel";
 import ProductList from "@/components/shared/products/ProductList";
+import ViewAllProductsButton from "@/components/shared/ViewAllProductsButton";
 import { getFeaturedProducts, getLatestProducts } from "@/lib/actions/product.action";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/constants";
 import {type Metadata } from "next";
@@ -28,6 +29,7 @@ export default async function Home() {
    <div className="main">
     {featuredProducts.length > 0 && <FeaturedProductCarousel data={featuredProducts} />}
       <ProductList title="New Arrivals" data = {products} />
+      <ViewAllProductsButton />
    </div>
   );
 }
