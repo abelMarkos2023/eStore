@@ -41,28 +41,11 @@ const ratings = [
 ]
 
 const sortingList = ['newest','highest','rating','lowest']
-const SearchPage = async ({searchParams}:{
-    searchParams:Promise<{
-        q?:string;
-        category?:string;
-        price?:string;
-        rating?:string;
-        sort?:string;
-        page?:string;
-    }>
-}) => {
-    const {
-        q = 'all',
-        category = 'all',
-        price = 'all',
-        rating = 'all',
-        sort = 'newest',
-        page = '1'
-    } = await searchParams;
-
-    const generateURL = ({c,p,s,r,pg}:{c?:string,p?:string,s?:string,r?:string,pg?:string}) => {
-
-        const params  = { q,category,price,rating,sort, page};
+const SearchPage = async ({searchParams}:{ searchParams:Promise<{ q?:string; category?:string; price?:string; rating?:string;sort?:string;
+page?:string;}>}) => {
+    const { q = 'all', category = 'all', price = 'all', rating = 'all', sort = 'newest', page = '1'} = await searchParams;
+   const generateURL = ({c,p,s,r,pg}:{c?:string,p?:string,s?:string,r?:string,pg?:string}) => {
+  const params  = { q,category,price,rating,sort, page};
 
         if(c) params.category = c;
         if(p) params.price = p;
