@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 const FeaturedProductCarousel = ({data}:{data:ProductType[]}) => {
 
-    data.map((product:ProductType) => console.log(product))
+    
   return (
     <Carousel className='w-full mb-12' opts={{ 
         loop:true

@@ -6,36 +6,66 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { createUpdateReview, getReviewByUserAndProduct } from "@/lib/actions/review.action";
+import { TReview } from "@/lib/types";
 import { insertReviewSchema } from "@/lib/validator";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { StarIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import z from "zod";
 
 const ReviewForm = ({productId,userId,onReviewSubmitted}:{productId:string,userId:string,onReviewSubmitted:()=>void}) => {
 
 const [open,setOpen] = useState(false);
-const form = useForm<z.infer<typeof insertReviewSchema>>({
+const [reviews,setReviews] = useState<TReview>();
+const form = useForm({
     resolver: zodResolver(insertReviewSchema),
-    defaultValues: {
+    defaultValues:reviews|| {
         rating: 1,
         title: '',
         description: '',
         productId,
         userId
     }
-})
+});
 
-const handleFormOpen = () => {
+
+
+const handleFormOpen = async () => {
+
+    const review = await getReviewByUserAndProduct({userId,productId});
+
+    form.setValue('rating',review?.rating||1);
+    form.setValue('title',review?.title||'');
+    form.setValue('description',review?.description||'');
     setOpen(true);
+}
+
+const handleFormSubmit = async (data: z.infer<typeof insertReviewSchema>) => {
+
+    const res = await createUpdateReview({
+        ...data,
+        productId,
+    });
+
+    if(!res.success){
+
+        toast.error(res.message);
+        return;
+    }
+
+    toast.success(res.message);
+    setOpen(false);
+    onReviewSubmitted();
 }
 return (
 <Dialog open={open} onOpenChange={setOpen}>
     <Button onClick={handleFormOpen}>Write a Review</Button>
     <DialogContent className="sm:max-w-[425px]">
         <Form {...form}>
-            <form method='POST'>
+            <form method='POST' onSubmit={form.handleSubmit(handleFormSubmit)}>
                 <DialogHeader>
                     <DialogTitle>Write a Review</DialogTitle>
                     <DialogDescription>Share your experience with this product</DialogDescription>

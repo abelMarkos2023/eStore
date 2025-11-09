@@ -1,4 +1,5 @@
 import zod from "zod";
+import {z} from "zod";
 import { formatDecimal } from "./utils";
 import { PAYMENT_METHODS } from "./constants";
 
@@ -121,10 +122,10 @@ export const updateUserSchema = updateProfileSchema.extend({
     role: zod.string().min(3, "Role must be at least 3 characters long"),
 });
 
-export const insertReviewSchema = zod.object({
-    productId: zod.string().min(3, "Product ID must be at least 3 characters long"),
-    userId: zod.string().min(3, "User ID must be at least 3 characters long"),
-    title: zod.string().min(3, "Title must be at least 3 characters long"),
-    rating: zod.number().int().min(1, "Rating must be at least 1").max(5, "Rating must be at most 5"),
-    description: zod.string().min(3, "Description must be at least 3 characters long"),
+export const insertReviewSchema = z.object({
+    productId: z.string().min(3, "Product ID must be at least 3 characters long"),
+    userId: z.string().min(3, "User ID must be at least 3 characters long"),
+    title: z.string().min(3, "Title must be at least 3 characters long"),
+    rating: z.coerce.number().int().min(1, "Rating must be at least 1").max(5, "Rating must be at most 5"),
+    description: z.string().min(3, "Description must be at least 3 characters long"),
 })

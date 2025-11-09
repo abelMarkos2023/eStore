@@ -4,6 +4,7 @@ import Link from "next/link";
 import React from "react";
 import ProductPrice from "./ProductPrice";
 import {type ProductType } from "@/lib/types";
+import Rating from "./rating";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   return (
@@ -23,7 +24,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-bold tsxt-sm">{product.brand}</h3>
         <Link href={`/product/${product.slug}`}>{product.name}</Link>
         <div className="flex justify-between gap-3">
-            <p className="font-lg">Product Rating</p>
+            <p className="font-lg">
+              <Rating value={Number(product.rating)} />
+            </p>
             <div className="font-extrabold text-xl">
                 {
                     product.stock ? <>
