@@ -24,9 +24,9 @@ const ProductCard = ({ product }: { product: ProductType }) => {
         <h3 className="font-bold tsxt-sm">{product.brand}</h3>
         <Link href={`/product/${product.slug}`}>{product.name}</Link>
         <div className="flex justify-between gap-3">
-            <p className="font-lg">
+            <div className="font-lg">
               <Rating value={Number(product.rating)} />
-            </p>
+            </div>
             <div className="font-extrabold text-xl">
                 {
                     product.stock ? <>

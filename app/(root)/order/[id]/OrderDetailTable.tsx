@@ -28,15 +28,18 @@ import {
 import { toast } from "sonner";
 import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import StripePayment from "./StripePayment";
 
 const OrderDetailTable = ({
   order,
   paypalClientId,
   isAdmin,
+  stripeClientSecret
 }: {
   order: Torder;
   paypalClientId: string;
   isAdmin: boolean;
+  stripeClientSecret: string | null;
 }) => {
   const {
     id,
@@ -244,7 +247,7 @@ const OrderDetailTable = ({
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between mb-4">
                 <div className="font-bold">Total Price</div>
                 <div className="text-lg font-bold">
                   {formatCurrency(totalPrice)}
@@ -261,6 +264,16 @@ const OrderDetailTable = ({
                   </PayPalScriptProvider>
                 </div>
               )}
+
+              {
+                !isPaid && paymentsMethod === "Stripe" && stripeClientSecret && (
+                  <StripePayment 
+                    stripeSecret={stripeClientSecret}
+                    priceInCent={Math.round(Number(totalPrice) * 100)}
+                    orderId={id!}
+                  />
+                )
+              }
 
               {!isPaid && paymentsMethod === "CashOnDelivery" && (
                 <MarkOrderAsPaidButton />
