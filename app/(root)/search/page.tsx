@@ -181,7 +181,7 @@ page?:string;}>}) => {
                 </div>
             <div className="grid md:grid-cols-3 md:gap-4">
                 
-                {products!.data.length > 0 ? products!.data.map((product:ProductType) => (
+                {products?.data?.length && products?.data?.length > 0 ? products!.data.map((product:ProductType) => (
                     <ProductCard key={product.slug} product={product} /> 
                 ))
             :(

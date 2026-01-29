@@ -32,4 +32,5 @@ export const productDefaultValues = {
     banner: ''
 }
 
+export const SENDER_EMAIL = process.env.SENDER_EMAIL || 'onboarding@resend.dev';
 export const USER_ROLES = process.env.USER_ROLES ? process.env.USER_ROLES.split(', ') : ['user', 'admin'];
