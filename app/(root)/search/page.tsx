@@ -61,7 +61,11 @@ page?:string;}>}) => {
 
     const products = await getAllProducts({limit: 10, page: Number(page), category, sort, price, rating, query: q});
 
-    console.log(products)
+    console.log('products',products)
+
+    if(!products) {
+        return <p className='text-center'>No Products Found</p>
+    }
   return (
     <div className="grid md:grid-cols-5 md:gap-5">
         <div className="filter-links space-y-4">
@@ -181,7 +185,7 @@ page?:string;}>}) => {
                 </div>
             <div className="grid md:grid-cols-3 md:gap-4">
                 
-                {products?.data?.length && products?.data?.length > 0 ? products!.data.map((product:ProductType) => (
+                {products?.data?.length && products?.data?.length > 0 ? products.data.map((product:ProductType) => (
                     <ProductCard key={product.slug} product={product} /> 
                 ))
             :(
