@@ -6,7 +6,6 @@ import { convertToPlainObject, formatError } from "../utils";
 import z from "zod";
 import {insertProductSchema, updateProductSchema } from "../validator";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { Prisma } from "@prisma/client";
 
 export const getAllProducts = async({limit= 5,page=1,category,query,sort,rating,price}:{limit?:number,page?:number,category?:string,query?:string,sort?:string,rating?:string,price?:string}) => {
@@ -41,9 +40,9 @@ export const getAllProducts = async({limit= 5,page=1,category,query,sort,rating,
     
 
     try {
-        const session = await auth();
+        //const session = await auth();
 
-        if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all products');
+       // if(!session || !session.user || session.user.role !== 'admin') throw new Error('You must be logged in as admin to get all products');
 
         
         const data = await prisma.product.findMany({
