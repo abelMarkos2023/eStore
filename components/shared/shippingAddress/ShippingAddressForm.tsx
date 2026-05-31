@@ -3,7 +3,7 @@
 import { TShippingAddress } from "@/lib/types"
 import {zodResolver} from '@hookform/resolvers/zod'
 import { shippingAddressSchema } from "@/lib/validator"
-import { ControllerRenderProps, SubmitHandler, useForm } from "react-hook-form"
+import { SubmitHandler, useForm } from "react-hook-form"
 import { shippingAddressDefaultValues } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { useTransition } from "react"
@@ -21,7 +21,17 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
 
   const form = useForm<z.infer<typeof shippingAddressSchema>>({
     resolver: zodResolver(shippingAddressSchema),
-    defaultValues:address || shippingAddressDefaultValues
+    defaultValues: address
+      ? {
+          fullName: address.fullName || '',
+          address: address.address || (address as { street?: string }).street || '',
+          city: address.city || '',
+          postalCode: address.postalCode || (address as { zip?: string }).zip || '',
+          country: address.country || '',
+          lat: address.lat ?? undefined,
+          lng: address.lng ?? undefined,
+        }
+      : shippingAddressDefaultValues,
   });
 
   const handleFormSubmit : SubmitHandler<z.infer<typeof shippingAddressSchema>> = async (values: z.infer<typeof shippingAddressSchema>) => {
@@ -53,12 +63,12 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'fullName'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'fullName'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your full name" {...field} />
+                <Input placeholder="Enter your full name" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,12 +79,12 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'address'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'address'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">Street Address</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your street address" {...field} value={field.value} />
+                <Input placeholder="Enter your street address" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -86,12 +96,12 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'city'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'city'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">City</FormLabel>
               <FormControl>
-                <Input placeholder="New York" {...field} />
+                <Input placeholder="New York" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,12 +113,12 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'postalCode'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'postalCode'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">Postal Code</FormLabel>
               <FormControl>
-                <Input placeholder="09987" {...field} />
+                <Input placeholder="09987" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -120,12 +130,12 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'country'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'country'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">Country</FormLabel>
               <FormControl>
-                <Input placeholder="USA" {...field} />
+                <Input placeholder="USA" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -137,12 +147,18 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'lat'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'lat'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 "> Lat</FormLabel>
               <FormControl>
-                <Input placeholder="09987" {...field} />
+                <Input 
+                  placeholder="09987" 
+                  type="number" 
+                  {...field} 
+                  value={field.value ?? ''} 
+                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,12 +170,18 @@ const ShippingAddressForm = ({address}:{address: TShippingAddress}) => {
           control={form.control}
           name = 'lng'
 
-          render = {({field}:{field:ControllerRenderProps<z.infer<typeof shippingAddressSchema>,'lng'>}) => (
+          render = {({field}) => (
             <div className="">
               <FormItem className="flex flex-col gap-2 w-full">
               <FormLabel className="text-md font-bold block flex-1 ">Lng</FormLabel>
               <FormControl>
-                <Input placeholder="8763454" {...field} />
+                <Input 
+                  placeholder="8763454" 
+                  type="number" 
+                  {...field} 
+                  value={field.value ?? ''} 
+                  onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

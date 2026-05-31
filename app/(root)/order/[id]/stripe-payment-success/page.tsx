@@ -17,13 +17,22 @@ const page = async({params,searchParams}:{params:Promise<{id:string}>,searchPara
 
     if(!order) return notFound();
 
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId as string);
+    let isPaymentSuccessful = false;
+    let amountPaid = 0;
 
-    if(paymentIntent.metadata.order_id !== order.id.toString()){
-        return notFound();
+    if (paymentIntentId === 'mock_success') {
+        isPaymentSuccessful = true;
+        amountPaid = Number(order.totalPrice);
+    } else {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId as string);
+
+        if(paymentIntent.metadata.order_id !== order.id.toString()){
+            return notFound();
+        }
+
+        isPaymentSuccessful = paymentIntent.status === 'succeeded';
+        amountPaid = paymentIntent.amount_received / 100;
     }
-
-    const isPaymentSuccessful = paymentIntent.status === 'succeeded';
 
     if(!isPaymentSuccessful) return notFound();
 
@@ -38,7 +47,7 @@ const page = async({params,searchParams}:{params:Promise<{id:string}>,searchPara
             <p className="mb-2">Thank you for your payment. Your order has been successfully processed.</p>
             <p className="mb-4">Order ID: <span className="font-mono">{order.id}</span></p>
             <p className="text-lg font-semibold">
-                Amount Paid: ${(paymentIntent.amount_received / 100).toFixed(2)}
+                Amount Paid: ${amountPaid.toFixed(2)}
             </p>
             <Button asChild className='w-full'>
                 <Link href={`/order/${id}`}>View Order</Link>
